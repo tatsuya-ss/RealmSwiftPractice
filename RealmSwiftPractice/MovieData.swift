@@ -16,42 +16,49 @@ class Movie: Object {
 }
 
 protocol MovieRepository {
-    func setMovieInfomation(title: String, releaseDay: String, overview: String, review: String)
+    func setMovieInfomation(movieContent: MovieContent)
     func fetchMovieInfomation() -> Movie?
+    func saveMovieInfomation(movieContent: MovieContent)
 }
 
 struct MovieInfomation : MovieRepository {
+    func saveMovieInfomation(movieContent: MovieContent) {
+        let realm = try! Realm()
+        let myMovie = realm.objects(Movie.self).first
+        
+        try! realm.write {
+            myMovie?.title = movieContent.title
+            myMovie?.releaseDay = movieContent.releaseDay
+            myMovie?.overview = movieContent.overview
+            myMovie?.review = movieContent.review
+        }
+        print(Realm.Configuration.defaultConfiguration.fileURL!)
+    }
+    
 
-    func setMovieInfomation(title: String, releaseDay: String, overview: String, review: String) {
+    func setMovieInfomation(movieContent: MovieContent) {
         let myMovie = Movie()
         let realm = try! Realm()
 
-        myMovie.title = title
-        myMovie.releaseDay = releaseDay
-        myMovie.overview = overview
-        myMovie.review = review
+        myMovie.title = movieContent.title
+        myMovie.releaseDay = movieContent.releaseDay
+        myMovie.overview = movieContent.overview
+        myMovie.review = movieContent.review
         
         try! realm.write {
             realm.add(myMovie)
         }
-        let displayMovie = realm.objects(Movie.self).first
         
-        try! realm.write {
-            displayMovie?.title = title
-            displayMovie?.releaseDay = releaseDay
-            displayMovie?.overview = overview
-            displayMovie?.review = review
-        }
-        print("realmに保存しました\n\(myMovie.title)\n\(myMovie.releaseDay)\n\(myMovie.overview)\n\(myMovie.review)")
         print(Realm.Configuration.defaultConfiguration.fileURL!)
 
     }
     
     func fetchMovieInfomation() -> Movie? {
         let realm = try! Realm()
-
-        let movie = realm.objects(Movie.self).first
-        return movie
+        if let movie = realm.objects(Movie.self).first {
+            return movie
+        }
+        return nil
     }
 }
 
